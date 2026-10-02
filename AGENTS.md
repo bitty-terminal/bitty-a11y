@@ -1,0 +1,5 @@
+# Accessibility repository guidance
+
+Metadata-only candidate; no migration authorized. Read repo.toml, TODO, CarryCtx, accepted Core boundaries and shared security corpus. Preserve accessible baseline, focus synchronization and controlled actions. Read-only projection does not make all OS accessibility operations read-only or privacy-free.
+
+English only; derive host values from configuration/environment/Git. Rust starts 0.0.1, edition 2024, Core MSRV. Use just gates; metadata checks are not backend/platform evidence. Local phases CTX-0001 -> 0002 -> 0003 -> 0004 are bootstrap, contract readiness, implementation and independent verification. Use named sessions, exact scopes, and task-bound worktrees after first commit. Managed hooks required. No commit/push/release without explicit authority; no DB/local-ref publication. Direct bootstrap authorized; independent review still required. Preserve unrelated work; no silent installs, destructive cleanup or killing unowned processes. Require platform accessibility/privacy/focus evidence and canonical docs synchronization before acceptance.
