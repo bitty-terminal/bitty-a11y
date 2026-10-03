@@ -13,4 +13,4 @@ rust_version = "1.85"
 status = "metadata-only"
 
 [contracts]
-status = "pending W-134; no implemented API"
+status = "boundary accepted (W-134 accepted); adapter build pending CTX-0003"
