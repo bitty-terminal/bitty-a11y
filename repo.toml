@@ -2,7 +2,7 @@
 name = "bitty-a11y"
 kind = "extension"
 lang = "rust"
-role = "candidate accessibility adapters; metadata-only scaffold"
+role = "accessibility adapter extension; landed crate, independently verified"
 owner = "bitty-core"
 docs = "bitty-terminal-docs"
 
@@ -10,7 +10,7 @@ docs = "bitty-terminal-docs"
 version = "0.0.1"
 edition = "2024"
 rust_version = "1.85"
-status = "metadata-only"
+status = "landed"
 
 [contracts]
-status = "boundary accepted (W-134 accepted); adapter build pending CTX-0003"
+status = "W-134 accepted; CTX-0002/0003/0004 complete; Core W-142 baseline verified"
