@@ -1,7 +1,11 @@
 # bitty-a11y
 
-Accessibility adapter extension crate (landed CTX-0003 greenfield adapter, independently verified CTX-0004). Zero-dependency snapshot/handle/focus/action core with a headless backend; platform backends follow behind the PlatformBackend trait. Read [AGENTS](AGENTS.md) and [TODO](TODO.md).
+Candidate accessibility adapter extension for the Bitty terminal platform. Read [AGENTS](AGENTS.md). Task management lives in CarryCtx.
 
-Prerequisite: W-134 / bitty-terminal-docs CTX-0090, Issue #169. Preserve accessible baseline, semantic snapshots, focus and controlled actions; do not silently make accessibility optional.
+Status: metadata baseline plus an implemented-only Rust crate. The crate has zero dependencies, forbids unsafe code, and ships a headless backend with fence tests. Local product gates pass (21 tests: 18 fences, 3 headless round-trip). The crate is not independently verified. GitHub Issues #4, #3, and #2 remain open pending review; Issue #1 is closed.
 
-CTX-0001 -> CTX-0002 -> CTX-0003 -> CTX-0004 maps to Issues #4 -> #3 -> #2 -> #1. All four phases are complete: bootstrap, accepted contract, landed adapter crate with fence tests, and independent verification against the Core W-142 baseline.
+Contract: W-134 is accepted in bitty-terminal-docs (`specifications/accessibility-extraction-contract.md`, CTX-0090, Issue #169). Core integration (W-142) is pending a stable host interface; the adapter ingests through `SnapshotBuilder` and defines no private bypass.
+
+Layout: `Cargo.toml` (publish false), `src/` (adapter core), `tests/` (fences, headless round-trip), `justfile` (metadata gates, product gates), CI (metadata, Rust, actionlint), and publication ref `refs/heads/carryctx-snapshots`.
+
+Phases: CTX-0001 maps to #4, CTX-0002 to #3, CTX-0003 to #2, CTX-0004 to #1. Closeout tasks CTX-0005, CTX-0006, and CTX-0007 track the open PRs.
