@@ -1,6 +1,6 @@
 # bitty-a11y
 
-Candidate accessibility adapter extension for the Bitty terminal platform. Read [AGENTS](AGENTS.md) and [TODO](TODO.md).
+Candidate accessibility adapter extension for the Bitty terminal platform. Read [AGENTS](AGENTS.md). Task management lives in CarryCtx.
 
 Status: metadata baseline plus an implemented-only Rust crate. The crate has zero dependencies, forbids unsafe code, and ships a headless backend with fence tests. Local product gates pass (21 tests: 18 fences, 3 headless round-trip). The crate is not independently verified. GitHub Issues #4, #3, and #2 remain open pending review; Issue #1 is closed.
 
