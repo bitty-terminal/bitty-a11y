@@ -2,7 +2,7 @@
 name = "bitty-a11y"
 kind = "extension"
 lang = "rust"
-role = "accessibility adapter extension; landed crate, independently verified"
+role = "candidate accessibility adapter extension; implemented-only, pending independent review"
 owner = "bitty-core"
 docs = "bitty-terminal-docs"
 
@@ -10,7 +10,7 @@ docs = "bitty-terminal-docs"
 version = "0.0.1"
 edition = "2024"
 rust_version = "1.85"
-status = "landed"
+status = "implemented-only"
 
 [contracts]
-status = "W-134 accepted; CTX-0002/0003/0004 complete; Core W-142 baseline verified"
+status = "W-134 accepted; Core W-142 pending stable host interface"
