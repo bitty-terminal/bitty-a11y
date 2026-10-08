@@ -31,7 +31,7 @@ Crate shape:
 
 - No Core dependency: `Cargo.toml` carries no dependency section. No
   Core code is vendored here.
-- Ingest is through the public adapter shape: the host feeds this
+- Ingest is through the public adapter shape: a host can feed this
   adapter through `SnapshotBuilder` and `Adapter::ingest`. Building or
   updating a snapshot cannot mutate grid, cursor, modes, scrollback,
   attachment, focus, or policy.
