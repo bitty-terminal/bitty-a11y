@@ -2,10 +2,10 @@
 
 Candidate accessibility adapter extension for the Bitty terminal platform. Read [AGENTS](AGENTS.md). Task management lives in CarryCtx.
 
-Status: metadata baseline plus an implemented-only Rust crate. The crate has zero dependencies, forbids unsafe code, and ships a headless backend with fence tests. Local product gates pass (21 tests: 18 fences, 3 headless round-trip). The crate is not independently verified. GitHub Issues #4, #3, and #2 remain open pending review; Issue #1 is closed.
+Status: metadata baseline plus an implemented-only Rust crate. The crate has zero dependencies, forbids unsafe code, and ships a headless backend with fence tests. Local product gates pass (32 tests: 18 fences, 3 headless round-trip, 11 host conformance). The crate is not independently verified. GitHub Issues #4, #3, and #2 remain open pending review; Issue #1 is closed.
 
-Contract: W-134 is accepted in bitty-terminal-docs (`specifications/accessibility-extraction-contract.md`, CTX-0090, Issue #169). Core integration (W-142) is pending a stable host interface; the adapter ingests through `SnapshotBuilder` and defines no private bypass.
+Contract: W-134 is accepted in bitty-terminal-docs (`specifications/accessibility-extraction-contract.md`, CTX-0090, Issue #169). The stable host interface is published here (`SnapshotHost` with `Adapter::ingest_host` plus `Adapter::expose_to`); the adapter ingests through `SnapshotBuilder` and defines no private bypass. Core follow-up (retire `bitty-ui/src/a11y.rs` onto this seam after 0.0.23, tracked from bitty#1629) is pending.
 
-Layout: `Cargo.toml` (publish false), `src/` (adapter core), `tests/` (fences, headless round-trip), `justfile` (metadata gates, product gates), CI (metadata, Rust, actionlint), and publication ref `refs/heads/carryctx-snapshots`.
+Layout: `Cargo.toml` (publish false), `src/` (adapter core), `tests/` (fences, headless round-trip, host conformance), `justfile` (metadata gates, product gates), CI (metadata, Rust, actionlint), and publication ref `refs/heads/carryctx-snapshots`.
 
 Phases: CTX-0001 maps to #4, CTX-0002 to #3, CTX-0003 to #2, CTX-0004 to #1. Closeout tasks CTX-0005, CTX-0006, and CTX-0007 track the open PRs.

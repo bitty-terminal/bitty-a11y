@@ -13,4 +13,4 @@ rust_version = "1.85"
 status = "implemented-only"
 
 [contracts]
-status = "W-134 accepted; Core W-142 pending stable host interface"
+status = "W-134 accepted; host trait published (SnapshotHost); Core retire of bitty-ui/src/a11y.rs pending after 0.0.23"

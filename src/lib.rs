@@ -42,12 +42,11 @@
 //!
 //! # Open points (honest, owned downstream)
 //!
-//! - Core snapshot export (`W-142` / `CTX-0935`): Core does not yet
-//!   publish its projection generation, focus owner, or invalidation
-//!   source through a stable public interface. Until it does, the host
-//!   feeds this adapter through [`SnapshotBuilder`] and
-//!   [`Adapter::ingest`]; no Core code is vendored here and no private
-//!   bypass exists.
+//! - Core snapshot export (`W-142` / `CTX-0935`): the stable host
+//!   interface now exists as [`SnapshotHost`] with [`Adapter::ingest_host`]
+//!   plus [`Adapter::expose_to`]. Core retires `bitty-ui/src/a11y.rs`
+//!   onto this seam in its own follow-up after 0.0.23; no Core code is
+//!   vendored here and no private bypass exists.
 //! - Per-platform backends (AT-SPI/D-Bus, Windows UI Automation,
 //!   macOS AX) materialize [`PlatformBackend`] in follow-up tasks;
 //!   only the [`HeadlessBackend`] ships here.
@@ -65,6 +64,7 @@ pub mod backend;
 pub mod error;
 pub mod focus;
 pub mod handles;
+pub mod host;
 pub mod snapshot;
 
 pub use action::{ActionKind, ActionOutcome, ActionRequest, ActionSink};
@@ -77,6 +77,7 @@ pub use backend::{ExposedSnapshot, HeadlessBackend, PlatformBackend};
 pub use error::A11yError;
 pub use focus::{FocusAssociation, FocusOwner, resolve_focus};
 pub use handles::{Anchor, ElementHandle, Generation, HandleMap};
+pub use host::SnapshotHost;
 pub use snapshot::{
     ChromeKind, CursorPosition, FocusScope, InteractivePurpose, MAX_ACCESSIBLE_NAME_LEN,
     MAX_SNAPSHOT_NODES, NodeView, Role, SceneKind, Snapshot, SnapshotBuilder, TextRun, role_of,
