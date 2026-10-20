@@ -65,15 +65,15 @@ and the component protocol stay a source-restricted seam owned by
 
 The same file implements `ComponentSnapshotHost`, the client half of
 the merged executable component (`f7e57091`, follow-up `99486eef`).
-It is default-off and transport-neutral: `ComponentHostConfig::default()`
-enables safe mode and grants no capability, `connect` denies before
-any exchange, and the client validates the handshake, complete
-snapshots, and diffs before publication. It performs no blocking I/O
-on the UI thread and exposes no actions, process spawning,
-filesystem/network operations, or platform accessibility API. The
-linked `SnapshotHost` model remains the safe fallback, and the
-component alias must not become the default path without
-compatibility and security review.
+It is default-off and transport-neutral:
+`ComponentHostConfig::default()` enables safe mode and grants no
+capability, `connect` denies before any exchange, and the client
+validates the handshake, complete snapshots, and diffs before
+publication. It performs no blocking I/O on the UI thread and exposes
+no actions, process spawning, filesystem/network operations, or
+platform accessibility API. The linked `SnapshotHost` model remains
+the safe fallback, and the component alias must not become the default
+path without compatibility and security review.
 
 The following remain pending: a runtime `Adapter` construction and
 refresh call site that drives `ingest_host` and `expose_to`; the
