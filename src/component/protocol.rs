@@ -1153,7 +1153,7 @@ pub fn encode_message(message: &Message) -> Result<Vec<u8>, WireError> {
             enc.u32(*notices);
             enc.boolean(*modal_overlay);
             enc.opt_name(focus.as_deref())?;
-            enc.opt_selection(*selection);
+            enc.opt_selection(*selection)?;
         }
         Message::PublishNode { request, node } => {
             require_request(*request)?;
@@ -1249,7 +1249,7 @@ pub fn encode_message(message: &Message) -> Result<Vec<u8>, WireError> {
             enc.u64(*generation);
             enc.u32(*nodes);
             enc.opt_id(*focus);
-            enc.opt_selection(*selection);
+            enc.opt_selection(*selection)?;
             enc.u32(*pages);
         }
         Message::SnapshotPage {
@@ -1296,7 +1296,7 @@ pub fn encode_message(message: &Message) -> Result<Vec<u8>, WireError> {
             enc.u32(*removed);
             enc.u32(*upserts);
             enc.opt_id(*focus);
-            enc.opt_selection(*selection);
+            enc.opt_selection(*selection)?;
             enc.u32(*pages);
         }
         Message::DiffPage {
@@ -1816,8 +1816,9 @@ impl Encoder {
         }
     }
 
-    fn opt_selection(&mut self, value: Option<Selection>) {
+    fn opt_selection(&mut self, value: Option<Selection>) -> Result<(), WireError> {
         if let Some(value) = value {
+            check_selection(value)?;
             self.u8(1);
             self.u32(value.anchor_row);
             self.u32(value.anchor_col);
@@ -1826,6 +1827,7 @@ impl Encoder {
         } else {
             self.u8(0);
         }
+        Ok(())
     }
 
     fn text(&mut self, value: &str) -> Result<(), WireError> {
@@ -2445,6 +2447,27 @@ mod tests {
             frame.len() <= FRAME_HEADER_BYTES + MAX_FRAME_BYTES,
             "frame is {} bytes",
             frame.len()
+        );
+    }
+
+    #[test]
+    fn encoder_rejects_invalid_selection_coordinates() {
+        let message = Message::SnapshotBegin {
+            request: 1,
+            generation: 0,
+            nodes: 2,
+            focus: None,
+            selection: Some(Selection {
+                anchor_row: MAX_GRID_ROWS,
+                anchor_col: 0,
+                focus_row: 0,
+                focus_col: 0,
+            }),
+            pages: 1,
+        };
+        assert_eq!(
+            encode_message(&message),
+            Err(WireError::InvalidField("selection coordinate"))
         );
     }
 
