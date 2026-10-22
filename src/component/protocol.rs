@@ -149,9 +149,6 @@ pub const MAX_NAME_BYTES: usize = MAX_ACCESSIBLE_NAME_LEN * 4;
 /// Maximum bytes of one terminal run.
 pub const MAX_ROW_TEXT_BYTES: usize = 8 * 1024;
 
-/// Maximum bytes of an announced chrome state.
-pub const MAX_STATE_TEXT_BYTES: usize = MAX_NAME_BYTES;
-
 /// Maximum tree depth a row may declare.
 pub const MAX_TREE_DEPTH: u8 = 4;
 
