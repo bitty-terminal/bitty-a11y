@@ -66,6 +66,21 @@
 //! publish whose node stream disagrees with the declaration, so no partial
 //! projection is ever presented.
 //!
+//! `Selection` is `anchor_row:u32 anchor_col:u32 focus_row:u32 focus_col:u32`
+//! (zero-based cells, half-open at the focus cell). A `TreeRow` is encoded in
+//! this fixed order:
+//!
+//! ```text
+//! id:u64 parent:u64 depth:u8 role:u8 surface:u8
+//! name:opt<str> content:opt<str> state_text:opt<str> states:u16
+//! focus:opt<(row:u32,col:u32)> selection:opt<(start:u32,end:u32)>
+//! bounds:opt<(x:u32,y:u32,width:u32,height:u32,unit:u8)>
+//! ```
+//!
+//! Names and state text are bounded to 256 characters (1 KiB UTF-8); terminal
+//! content is bounded to [`MAX_ROW_TEXT_BYTES`]. `bounds.unit` is
+//! [`BOUNDS_UNIT_CHARS`] in v1.
+//!
 //! # Authority and capability boundary
 //!
 //! This protocol carries **no file operations, no descriptor passing, no
