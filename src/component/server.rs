@@ -875,10 +875,6 @@ impl Session {
             pending.selection,
             pending.modal_overlay,
         )?;
-        self.adapter
-            .ingest(snapshot, map, focus, &notices, None)
-            .map_err(map_a11y)?;
-
         let nodes = u32::try_from(rows.len()).map_err(|_| Refusal {
             kind: ErrorKind::Budget,
             message: ERR_PUBLISH_COUNT,
@@ -889,6 +885,9 @@ impl Session {
                 message: ERR_PUBLISH_COUNT,
             });
         }
+        self.adapter
+            .ingest(snapshot, map, focus, &notices, None)
+            .map_err(map_a11y)?;
         let (removed_ids, _upserts, added, updated) = self.delta(&rows);
         let removed = u32::try_from(removed_ids.len()).unwrap_or(u32::MAX);
         self.live = Some(LiveTree {
