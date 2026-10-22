@@ -475,7 +475,6 @@ impl Session {
             }
             return outcome;
         }
-        self.rate_violations = 0;
         let request_id = message.request_id().unwrap_or(CONNECTION_ID);
 
         match message {
