@@ -61,6 +61,7 @@ pub mod action;
 pub mod adapter;
 pub mod announce;
 pub mod backend;
+pub mod component;
 pub mod error;
 pub mod focus;
 pub mod handles;
