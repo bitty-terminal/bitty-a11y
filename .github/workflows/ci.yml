@@ -42,6 +42,22 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: RUSTFLAGS="-D warnings" cargo clippy --workspace --all-targets
       - run: cargo test --workspace --locked
+  msrv:
+    name: MSRV 1.85 check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # MSRV floor; must match rust-version in Cargo.toml.
+      - name: Install Rust 1.85.0 toolchain
+        uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # v1
+        with:
+          toolchain: 1.85.0
+      - name: Check MSRV compilation
+        env:
+          RUSTFLAGS: "-D warnings"
+        run: cargo +1.85.0 check --workspace --all-targets --locked
   actionlint:
     name: Lint GitHub Actions workflows
     runs-on: ubuntu-latest

@@ -669,13 +669,13 @@ impl Session {
         focus: Option<String>,
         selection: Option<Selection>,
     ) -> Result<(), Refusal> {
-        if let Some(live) = &self.live
-            && generation <= live.generation
-        {
-            return Err(Refusal {
-                kind: ErrorKind::StaleGeneration,
-                message: ERR_STALE_GENERATION,
-            });
+        if let Some(live) = &self.live {
+            if generation <= live.generation {
+                return Err(Refusal {
+                    kind: ErrorKind::StaleGeneration,
+                    message: ERR_STALE_GENERATION,
+                });
+            }
         }
         let mut text_bytes = root_name.len().saturating_add(title.len());
         if let Some(focus) = &focus {
@@ -819,13 +819,13 @@ impl Session {
                 message: ERR_PUBLISH_COUNT,
             });
         }
-        if let Some(live) = &self.live
-            && generation <= live.generation
-        {
-            return Err(Refusal {
-                kind: ErrorKind::StaleGeneration,
-                message: ERR_STALE_GENERATION,
-            });
+        if let Some(live) = &self.live {
+            if generation <= live.generation {
+                return Err(Refusal {
+                    kind: ErrorKind::StaleGeneration,
+                    message: ERR_STALE_GENERATION,
+                });
+            }
         }
 
         let mut builder = SnapshotBuilder::new(Generation::from_u64(generation));
@@ -988,21 +988,24 @@ impl Session {
                 states |= STATE_FOCUSED;
             }
             if modal
-                && let NodeView::Chrome {
-                    kind: ChromeKind::Overlay,
-                    ..
-                } = view
+                && matches!(
+                    view,
+                    NodeView::Chrome {
+                        kind: ChromeKind::Overlay,
+                        ..
+                    }
+                )
             {
                 states |= STATE_MODAL;
             }
             let mut row_selection = None;
             let content = match view {
                 NodeView::TerminalRow { text } => {
-                    if let Some(selection) = normalized
-                        && let Some(span) = selection_span(selection, anchor, text)
-                    {
-                        states |= STATE_SELECTED;
-                        row_selection = Some(span);
+                    if let Some(selection) = normalized {
+                        if let Some(span) = selection_span(selection, anchor, text) {
+                            states |= STATE_SELECTED;
+                            row_selection = Some(span);
+                        }
                     }
                     Some(text.to_owned())
                 }
@@ -1024,12 +1027,13 @@ impl Session {
             });
         }
 
-        if normalized.is_some()
-            && let Some(terminal) = rows
+        if normalized.is_some() {
+            if let Some(terminal) = rows
                 .iter_mut()
                 .find(|row| row.role == ROLE_TEXT && row.parent == root_id && row.depth == 1)
-        {
-            terminal.states |= STATE_SELECTED;
+            {
+                terminal.states |= STATE_SELECTED;
+            }
         }
         self.ids.retain(&live_anchors);
         Ok((rows, focus_id))

@@ -120,9 +120,14 @@ created and nothing is uploaded to R2.
 
 ```bash
 just product                                   # fmt, clippy -D warnings, all tests
+just msrv                                      # MSRV floor: cargo +1.85.0 check
 cargo test --test component_server --locked    # live protocol suite
 cargo test --test component_descriptor --locked
 ```
+
+The CI `MSRV 1.85 check` job installs Rust 1.85.0 and compiles
+`--workspace --all-targets` with `-D warnings`, so syntax newer than the
+declared `rust-version = "1.85"` cannot land again.
 
 The live suite covers a real publication and snapshot, diff/ack, stable ids
 that are never reused, stale-generation refusal, oversized/malformed/zero
@@ -155,8 +160,8 @@ packed release binary.
 `src/bin/bitty-a11y.rs`), `tests/` (fences, headless round-trip, host
 conformance, component descriptor, live component server), `scripts/`
 (packaging and CarryCtx publication), `docs/` (design notes), `justfile`
-(metadata, component, and product gates), CI (metadata, Rust, actionlint,
-component package and live smoke), and publication ref
+(metadata, component, and product gates), CI (metadata, Rust, MSRV 1.85,
+actionlint, component package and live smoke), and publication ref
 `refs/heads/carryctx-snapshots`.
 
 Phases: CTX-0001 maps to #4, CTX-0002 to #3, CTX-0003 to #2, CTX-0004 to #1.
