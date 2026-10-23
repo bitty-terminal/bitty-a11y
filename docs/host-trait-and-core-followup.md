@@ -54,14 +54,14 @@ across generations.
 
 ## Core binding status
 
-Core bound this seam in bitty PR #2547 (merged `e8fc4d10`;
+Core bound this seam in bitty PR #2342 (merged `d2eabc34`;
+CTX-1362) and extended it in bitty PR #2547 (merged `e8fc4d10`;
 CTX-1466, Refs bitty#2257). `crates/bitty-ui/src/a11y_host.rs`
 implements `SnapshotHost` over the terminal projection,
 `crates/bitty-ui/src/a11y.rs` is retired, and `uitree.rs` consumes
 this repo's `Role` vocabulary. The W-147 fence permits the
-`bitty-a11y` identifiers only in `a11y_host.rs`, so the linked model
-and the component protocol stay a source-restricted seam owned by
-`bitty-ui`.
+`bitty-a11y` identifiers only in `a11y_host.rs`; #2547 extended it to
+fence both the linked model and the component protocol aliases.
 
 The same file implements `ComponentSnapshotHost`, the client half of
 the merged executable component (`f7e57091`, follow-up `99486eef`).
