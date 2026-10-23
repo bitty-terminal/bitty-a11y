@@ -1883,15 +1883,15 @@ impl Encoder {
         if (row.surface == SURFACE_NONE) != (row.role != ROLE_NONE) {
             return Err(WireError::InvalidField("tree row surface"));
         }
-        if let Some(span) = row.selection
-            && span.start_col >= span.end_col
-        {
-            return Err(WireError::InvalidField("selection span"));
+        if let Some(span) = row.selection {
+            if span.start_col >= span.end_col {
+                return Err(WireError::InvalidField("selection span"));
+            }
         }
-        if let Some(bounds) = row.bounds
-            && bounds.unit != BOUNDS_UNIT_CHARS
-        {
-            return Err(WireError::InvalidField("bounds unit"));
+        if let Some(bounds) = row.bounds {
+            if bounds.unit != BOUNDS_UNIT_CHARS {
+                return Err(WireError::InvalidField("bounds unit"));
+            }
         }
         self.u64(row.id);
         self.u64(row.parent);
@@ -2172,15 +2172,15 @@ impl<'a> Decoder<'a> {
         if (row.surface == SURFACE_NONE) != (row.role != ROLE_NONE) {
             return Err(WireError::InvalidField("tree row surface"));
         }
-        if let Some(span) = row.selection
-            && span.start_col >= span.end_col
-        {
-            return Err(WireError::InvalidField("selection span"));
+        if let Some(span) = row.selection {
+            if span.start_col >= span.end_col {
+                return Err(WireError::InvalidField("selection span"));
+            }
         }
-        if let Some(bounds) = row.bounds
-            && bounds.unit != BOUNDS_UNIT_CHARS
-        {
-            return Err(WireError::InvalidField("bounds unit"));
+        if let Some(bounds) = row.bounds {
+            if bounds.unit != BOUNDS_UNIT_CHARS {
+                return Err(WireError::InvalidField("bounds unit"));
+            }
         }
         Ok(row)
     }

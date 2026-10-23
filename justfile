@@ -97,3 +97,7 @@ product:
     cargo fmt --all -- --check
     RUSTFLAGS="-D warnings" cargo clippy --workspace --all-targets
     cargo test --workspace --locked
+
+# MSRV floor gate: the declared rust-version in Cargo.toml (CI installs it).
+msrv:
+    RUSTFLAGS="-D warnings" cargo +1.85.0 check --workspace --all-targets --locked
