@@ -28,6 +28,17 @@ impl Generation {
         Self(0)
     }
 
+    /// Constructs a generation from a host-reported revision.
+    ///
+    /// The component split receives the projection generation over the wire;
+    /// this is the single conversion point, not a way to invent revision
+    /// ordering. Callers still compare generations and refuse a value older
+    /// than the live one.
+    #[must_use]
+    pub const fn from_u64(value: u64) -> Self {
+        Self(value)
+    }
+
     /// The numeric revision, for diagnostics and backend reconciliation.
     #[must_use]
     pub const fn as_u64(self) -> u64 {

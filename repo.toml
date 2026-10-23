@@ -2,7 +2,7 @@
 name = "bitty-a11y"
 kind = "extension"
 lang = "rust"
-role = "candidate accessibility adapter extension; implemented-only, pending independent review"
+role = "candidate accessibility adapter extension; linked crate + installable stdio component (protocol v1)"
 owner = "bitty-core"
 docs = "bitty-terminal-docs"
 
@@ -10,7 +10,10 @@ docs = "bitty-terminal-docs"
 version = "0.0.1"
 edition = "2024"
 rust_version = "1.85"
-status = "implemented-only"
+status = "implemented-only; component boundary CTX-0009"
 
 [contracts]
-status = "W-134 accepted; host trait published (SnapshotHost); Core retire of bitty-ui/src/a11y.rs pending after 0.0.23"
+status = "W-134 accepted; host trait published (SnapshotHost); a11y component protocol v1 packed (host client pending); Core retire of bitty-ui/src/a11y.rs pending after 0.0.23"
+
+[contracts.provides]
+component-a11y = "src/component" # installable stdio component `bitty-a11y`, wire protocol v1
