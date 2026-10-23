@@ -1,11 +1,10 @@
-# Host trait and Core follow-up: retire `bitty-ui/src/a11y.rs`
+# Host trait and Core binding status
 
 Priority: P1 | Area: architecture | Labels: chore,P1,area:architecture
-| Milestone: v0.1.0 | Task: CTX-0008 | Issue: a11y#14 | Audit: bitty#1629 F4
+| Milestone: v0.1.0 | Task: CTX-1362 | Issue: a11y#14 | Refs: bitty#2257
 
 This note publishes the host-side contract and records the Core-side
-follow-up as a doc-level reference only. No Core changes land here.
-Core rewire happens after 0.0.23.
+binding status. No Core changes land here.
 
 ## Host contract
 
@@ -53,17 +52,35 @@ all fail-closed bounds, stale-generation rejection with nothing
 swapped, retirement on generation advance, and no retained handles
 across generations.
 
-## Core follow-up (doc reference only)
+## Core binding status
 
-Core still carries the parallel model named in a11y#14:
-`crates/bitty-ui/src/a11y.rs` duplicates this repo's `snapshot.rs`
-(`Role`, `SceneKind`, `ChromeKind`, `SnapshotBuilder`, same constants
-`MAX_A11Y_TREE_NODES = 4096`, `MAX_ACCESSIBLE_NAME_LEN = 256`), with
-the single consumer `uitree.rs`. This repo additionally owns the
-`Adapter`, `ingest`, and `expose_to` seam Core lacks.
+Core bound this seam in bitty PR #2342 (merged `d2eabc34`;
+CTX-1362) and extended it in bitty PR #2547 (merged `e8fc4d10`;
+CTX-1466, Refs bitty#2257). `crates/bitty-ui/src/a11y_host.rs`
+implements `SnapshotHost` over the terminal projection,
+`crates/bitty-ui/src/a11y.rs` is retired, and `uitree.rs` consumes
+this repo's `Role` vocabulary. The W-147 fence permits the
+`bitty-a11y` identifiers only in `a11y_host.rs`; #2547 extended it to
+fence both the linked model and the component protocol aliases.
 
-The Core rewire, tracked from bitty#1629 after the 0.0.23 release,
-implements `SnapshotHost` on the Core side, drives
-`Adapter::ingest_host` plus `Adapter::expose_to`, migrates the single
-`uitree.rs` consumer, and deletes `crates/bitty-ui/src/a11y.rs`. That
-work lands in the Core repository, not here.
+The same file implements `ComponentSnapshotHost`, the client half of
+the merged executable component (`f7e57091`, follow-up `99486eef`).
+It is default-off and transport-neutral:
+`ComponentHostConfig::default()` enables safe mode and grants no
+capability, `connect` denies before any exchange, and the client
+validates the handshake, complete snapshots, and diffs before
+publication. It performs no blocking I/O on the UI thread and exposes
+no actions, process spawning, filesystem/network operations, or
+platform accessibility API. The linked `SnapshotHost` model remains
+the safe fallback, and the component alias must not become the default
+path without compatibility and security review.
+
+The following remain pending: a runtime `Adapter` construction and
+refresh call site that drives `ingest_host` and `expose_to`; the
+composition-root transport, installer, digest policy, and
+process-group lifecycle for the component; and the platform backends
+(AT-SPI/D-Bus on Linux, Windows UI Automation, macOS AX). Only
+`HeadlessBackend` ships. No assistive technology, including a screen
+reader, sees a Bitty tree yet: the merged seam is a contract, not
+platform exposure. The remaining platform and runtime work is tracked
+in bitty#2257.
