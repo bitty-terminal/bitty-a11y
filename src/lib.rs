@@ -49,7 +49,9 @@
 //!   vendored here and no private bypass exists.
 //! - Per-platform backends (AT-SPI/D-Bus, Windows UI Automation,
 //!   macOS AX) materialize [`PlatformBackend`] in follow-up tasks;
-//!   only the [`HeadlessBackend`] ships here.
+//!   only the [`HeadlessBackend`] ships here. The executable component
+//!   boundary (bitty#2496) is in [`component`]; it serves bounded snapshots
+//!   and diffs over stdio and does not add a platform bridge.
 //! - Action taxonomy beyond node activation and any live event stream
 //!   require their own reviewed extension (post-1.0).
 //! - Contrast floor ownership stays with the theme-token contract;
@@ -61,6 +63,7 @@ pub mod action;
 pub mod adapter;
 pub mod announce;
 pub mod backend;
+pub mod component;
 pub mod error;
 pub mod focus;
 pub mod handles;

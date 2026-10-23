@@ -10,6 +10,10 @@ publish = false
 name = "bitty_a11y"
 path = "src/lib.rs"
 
+[[bin]]
+name = "bitty-a11y"
+path = "src/bin/bitty-a11y.rs"
+
 [lints.rust]
 unsafe_code = "forbid"
 
