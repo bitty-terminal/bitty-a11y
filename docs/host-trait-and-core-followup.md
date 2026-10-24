@@ -83,4 +83,6 @@ process-group lifecycle for the component; and the platform backends
 `HeadlessBackend` ships. No assistive technology, including a screen
 reader, sees a Bitty tree yet: the merged seam is a contract, not
 platform exposure. The remaining platform and runtime work is tracked
-in bitty#2257.
+in bitty#1768 under the accepted accessibility retention decision in
+bitty-terminal-docs
+(`specifications/accessibility-model-retention-decision.md`).
