@@ -1,7 +1,7 @@
 # Host trait and Core binding status
 
 Priority: P1 | Area: architecture | Labels: chore,P1,area:architecture
-| Milestone: v0.1.0 | Task: CTX-1362 | Issue: a11y#14 | Refs: bitty#2257
+| Milestone: v0.1.0 | Task: CTX-1362 | Issue: a11y#14 | Refs: bitty#1768
 
 This note publishes the host-side contract and records the Core-side
 binding status. No Core changes land here.
