@@ -1,7 +1,7 @@
 # Host trait and Core binding status
 
 Priority: P1 | Area: architecture | Labels: chore,P1,area:architecture
-| Milestone: v0.1.0 | Task: CTX-1362 | Issue: a11y#14 | Refs: bitty#2257
+| Milestone: v0.1.0 | Task: CTX-1362 | Issue: a11y#14 | Refs: bitty#1768
 
 This note publishes the host-side contract and records the Core-side
 binding status. No Core changes land here.
@@ -83,4 +83,6 @@ process-group lifecycle for the component; and the platform backends
 `HeadlessBackend` ships. No assistive technology, including a screen
 reader, sees a Bitty tree yet: the merged seam is a contract, not
 platform exposure. The remaining platform and runtime work is tracked
-in bitty#2257.
+in bitty#1768 under the accepted accessibility retention decision in
+bitty-terminal-docs
+(`specifications/accessibility-model-retention-decision.md`).

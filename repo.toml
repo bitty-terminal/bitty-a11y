@@ -13,7 +13,7 @@ rust_version = "1.85"
 status = "implemented-only; component boundary CTX-0009"
 
 [contracts]
-status = "W-134 accepted; host trait published (SnapshotHost); Core bound the seam in bitty PR #2342 (merged d2eabc34) and added the default-off transport-neutral ComponentSnapshotHost in bitty PR #2547 (merged e8fc4d10): crates/bitty-ui/src/a11y_host.rs implements both, W-147 permits the a11y identifiers only there, and the parallel a11y.rs model is retired; AT-SPI/D-Bus, Windows UIA, and macOS AX backends plus the runtime Adapter construction/refresh call site remain pending (bitty#2257)"
+status = "W-134 accepted; host trait published (SnapshotHost); Core bound the seam in bitty PR #2342 (merged d2eabc34) and added the default-off transport-neutral ComponentSnapshotHost in bitty PR #2547 (merged e8fc4d10): crates/bitty-ui/src/a11y_host.rs implements both, W-147 permits the a11y identifiers only there, and the parallel a11y.rs model is retired; AT-SPI/D-Bus, Windows UIA, and macOS AX backends plus the runtime Adapter construction/refresh call site remain pending (bitty#1768) and are explicitly deferred by the accepted accessibility retention decision in bitty-terminal-docs specifications/accessibility-model-retention-decision.md"
 
 [contracts.provides]
 component-a11y = "src/component" # installable stdio component `bitty-a11y`, wire protocol v1
