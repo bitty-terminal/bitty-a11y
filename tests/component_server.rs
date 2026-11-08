@@ -13,10 +13,10 @@
 #![cfg(unix)]
 
 use std::collections::HashSet;
-use std::io::{BufReader, Write};
+use std::io::{BufReader, ErrorKind as IoErrorKind, Write};
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use bitty_a11y::component::protocol::{
     ErrorKind, FocusCell, FrameReader, HELLO_CAPABILITY_GRANTED, HELLO_SAFE_MODE, MAX_FRAME_BYTES,
@@ -147,12 +147,19 @@ impl Component {
         }
     }
 
+    /// Waits up to [`WAIT`] for the component process to exit and returns its status code.
     fn wait_code(&mut self) -> i32 {
-        self.child
-            .wait()
-            .expect("wait for component")
-            .code()
-            .expect("component exited without a code")
+        let deadline = Instant::now() + WAIT;
+        loop {
+            if let Some(status) = self.child.try_wait().expect("poll component exit") {
+                return status.code().expect("component exited without a code");
+            }
+            assert!(
+                Instant::now() < deadline,
+                "component process did not exit within {WAIT:?}"
+            );
+            std::thread::sleep(Duration::from_millis(5));
+        }
     }
 
     fn shutdown(mut self) {
@@ -824,6 +831,8 @@ fn safe_mode_and_withheld_capability_are_deprived() {
     withheld.shutdown();
 }
 
+/// Verifies that a sustained flood of rate-consuming requests closes the session
+/// even if token refills reset intermediate violation streaks.
 #[test]
 fn request_rate_is_bounded() {
     let mut component = Component::start();
@@ -831,26 +840,48 @@ fn request_rate_is_bounded() {
     let _ = publish(&mut component, 1, 1, &spec);
 
     let mut burst = Vec::new();
-    for _ in 0..200 {
+    for _ in 0..256 {
         burst.extend(encode_frame(&Message::DiffAck { generation: 1 }).expect("encode ack"));
     }
     component.send_raw(&burst);
 
+    let deadline = Instant::now() + WAIT;
+    let poll = Duration::from_millis(200);
     let mut violations = 0_u32;
     loop {
-        match component.recv() {
-            Message::Error {
+        match component.messages.recv_timeout(poll) {
+            Ok(Ok(Message::Error {
                 kind: ErrorKind::RateLimited,
                 ..
-            } => {
+            })) => {
                 violations += 1;
-                if violations == RATE_MAX_VIOLATIONS {
-                    break;
+            }
+            Ok(Ok(other)) => panic!("unexpected frame while flooding: {other:?}"),
+            Ok(Err(error)) => panic!("component decode error: {error}"),
+            Err(RecvTimeoutError::Disconnected) => break,
+            Err(RecvTimeoutError::Timeout) => {
+                assert!(
+                    Instant::now() < deadline,
+                    "timed out waiting for rate-limit flood to close session (violations={violations})"
+                );
+                if let Some(stdin) = component.stdin.as_mut() {
+                    if let Err(error) = stdin.write_all(&burst).and_then(|()| stdin.flush()) {
+                        assert!(
+                            matches!(
+                                error.kind(),
+                                IoErrorKind::BrokenPipe | IoErrorKind::ConnectionReset
+                            ),
+                            "write raw burst: {error}"
+                        );
+                    }
                 }
             }
-            other => panic!("unexpected frame while flooding: {other:?}"),
         }
     }
+    assert!(
+        violations >= RATE_MAX_VIOLATIONS,
+        "expected at least {RATE_MAX_VIOLATIONS} rate-limit errors before close, got {violations}"
+    );
     assert_eq!(
         component.wait_code(),
         i32::from(SERVER_EXIT_PROTOCOL),

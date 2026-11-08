@@ -1722,6 +1722,8 @@ mod tests {
         ));
     }
 
+    /// Verifies that an allowed rate-consuming request resets the consecutive
+    /// rate-limit violation streak before subsequent violations close the session.
     #[test]
     fn rate_violation_streak_resets_after_allowed_request() {
         let mut session = Session::new();
@@ -1819,6 +1821,8 @@ mod tests {
         assert_eq!(closing.close, Some(SERVER_EXIT_PROTOCOL));
     }
 
+    /// Verifies that `DiffAck` refusals report `CONNECTION_ID` without closing
+    /// the session, while an accepted acknowledgement emits no reply.
     #[test]
     fn diff_ack_refusal_uses_connection_id_without_closing_session() {
         let mut session = Session::new();
