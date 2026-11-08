@@ -189,12 +189,20 @@ fn host_oversized_snapshot_fails_closed() {
 #[test]
 fn host_overlong_announcement_fails_closed() {
     let mut host = standard_host();
-    host.notices = vec![(AnnouncementKind::Focus, "a".repeat(300))];
+    host.notices = vec![
+        (AnnouncementKind::Focus, "valid focus notice".to_string()),
+        (AnnouncementKind::AsyncState, "a".repeat(300)),
+    ];
     let mut adapter = Adapter::new();
     let err = adapter
         .ingest_host(&host, Generation::initial(), None)
         .unwrap_err();
     assert_eq!(err, A11yError::AnnouncementTooLong { len: 300, cap: 256 });
+    assert!(
+        adapter.pending_announcements().is_empty(),
+        "failed ingest must not leave partial announcements queued"
+    );
+    assert!(adapter.snapshot().is_none());
 }
 
 #[test]

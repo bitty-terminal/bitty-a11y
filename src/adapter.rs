@@ -153,9 +153,11 @@ impl Adapter {
                 live: incoming.as_u64(),
             });
         }
+        let mut next_announcements = self.announcements.clone();
         for (kind, text) in announcements {
-            self.announcements.push(*kind, text)?;
+            next_announcements.push(*kind, text)?;
         }
+        self.announcements = next_announcements;
         let previous = self.live;
         self.live = incoming;
         self.snapshot = Some(snapshot);
