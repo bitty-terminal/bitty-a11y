@@ -46,8 +46,14 @@
 //! | `0x3E` | `ShutdownAck`   | (none)                                                                                                                                  | comp->host |
 //!
 //! `request` ids are non-zero and host-assigned. [`CONNECTION_ID`] (`0`)
-//! marks a connection-level [`Message::Error`] (handshake, framing, or
-//! protocol failure). `generation` is the projection generation Core reports;
+//! marks either a connection-level [`Message::Error`] (handshake, framing, or
+//! protocol failure) or a refusal of a requestless [`Message::DiffAck`]
+//! (`Denied`, `Unavailable`, `StaleGeneration`, or `RateLimited`). Hosts
+//! distinguish connection-fatal `Error` frames (`ErrorKind::Protocol`, or
+//! `ErrorKind::RateLimited` when the stream closes after
+//! [`RATE_MAX_VIOLATIONS`](super::server::RATE_MAX_VIOLATIONS) consecutive
+//! violations) from non-fatal `DiffAck` refusals, which leave the session
+//! open. `generation` is the projection generation Core reports;
 //! a publication must advance it, and a host that presents an older or unknown
 //! generation gets a typed error or a full snapshot, never a fabricated
 //! delta.
@@ -238,7 +244,8 @@ pub const TAG_SHUTDOWN_ACK: u8 = 0x3E;
 /// `Shutdown` tag.
 pub const TAG_SHUTDOWN: u8 = 0x3F;
 
-/// Connection-level `Error` frame request id.
+/// Request id (`0`) used by connection-level [`Message::Error`] frames and
+/// refusals of requestless [`Message::DiffAck`] messages.
 pub const CONNECTION_ID: u64 = 0;
 
 // ── tree-row vocabulary ─────────────────────────────────────────────────────
@@ -788,6 +795,12 @@ pub enum Message {
     },
     /// Acknowledge the live generation after applying a diff (host ->
     /// component).
+    ///
+    /// `DiffAck` carries no request id on the wire: an accepted acknowledgement
+    /// emits no reply frame, while a refusal (`Denied`, `Unavailable`,
+    /// `StaleGeneration`, or `RateLimited`) emits [`Message::Error`] with
+    /// `request == `[`CONNECTION_ID`] without closing the session (unless
+    /// consecutive rate-limit violations reach the session close threshold).
     DiffAck {
         /// Generation the host has fully applied.
         generation: u64,
@@ -869,7 +882,8 @@ pub enum Message {
     },
     /// Typed error (component -> host).
     Error {
-        /// Request id, or [`CONNECTION_ID`] for a connection-level failure.
+        /// Request id, or [`CONNECTION_ID`] for a connection-level failure or
+        /// a requestless [`Message::DiffAck`] refusal.
         request: u64,
         /// Error category.
         kind: ErrorKind,

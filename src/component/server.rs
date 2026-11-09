@@ -32,7 +32,12 @@
 //! id. A host that applies a diff at generation `G` and then asks for a diff
 //! `since` an older or unknown generation receives a **full snapshot** rather
 //! than a fabricated delta. A diff or ack for a generation the server has not
-//! published fails with `stale_generation`.
+//! published fails with `stale_generation`. Because [`Message::DiffAck`] carries
+//! no request id on the wire, any `DiffAck` refusal (`Denied`, `Unavailable`,
+//! `StaleGeneration`, or `RateLimited`) is reported with
+//! `Error.request == `[`CONNECTION_ID`]; unlike `ErrorKind::Protocol` (or
+//! `ErrorKind::RateLimited` after [`RATE_MAX_VIOLATIONS`] consecutive
+//! violations), a `DiffAck` refusal does not close the session.
 //!
 //! # Safe mode and deprivation
 //!
@@ -462,18 +467,21 @@ impl Session {
             return outcome;
         }
 
-        if self.consumes_rate(&message) && !self.rate.allow(now) {
-            self.rate_violations = self.rate_violations.saturating_add(1);
-            outcome.replies.push(Message::Error {
-                request: message.request_id().unwrap_or(CONNECTION_ID),
-                kind: ErrorKind::RateLimited,
-                message: ERR_RATE_LIMITED.to_owned(),
-            });
-            if self.rate_violations >= RATE_MAX_VIOLATIONS {
-                outcome.close = Some(SERVER_EXIT_PROTOCOL);
-                self.phase = Phase::Closed;
+        if self.consumes_rate(&message) {
+            if !self.rate.allow(now) {
+                self.rate_violations = self.rate_violations.saturating_add(1);
+                outcome.replies.push(Message::Error {
+                    request: message.request_id().unwrap_or(CONNECTION_ID),
+                    kind: ErrorKind::RateLimited,
+                    message: ERR_RATE_LIMITED.to_owned(),
+                });
+                if self.rate_violations >= RATE_MAX_VIOLATIONS {
+                    outcome.close = Some(SERVER_EXIT_PROTOCOL);
+                    self.phase = Phase::Closed;
+                }
+                return outcome;
             }
-            return outcome;
+            self.rate_violations = 0;
         }
         let request_id = message.request_id().unwrap_or(CONNECTION_ID);
 
@@ -1712,5 +1720,139 @@ mod tests {
                 ..
             }]
         ));
+    }
+
+    /// Verifies that an allowed rate-consuming request resets the consecutive
+    /// rate-limit violation streak before subsequent violations close the session.
+    #[test]
+    fn rate_violation_streak_resets_after_allowed_request() {
+        let mut session = Session::new();
+        let t0 = now();
+        let outcome = session.handle(
+            Message::Hello {
+                min: 1,
+                max: 1,
+                component: "a11y".to_owned(),
+                version: "test".to_owned(),
+                mode: HELLO_CAPABILITY_GRANTED,
+            },
+            t0,
+        );
+        assert_eq!(outcome.close, None);
+
+        for req in 1..=u64::from(RATE_CAPACITY) {
+            let outcome = session.handle(
+                Message::SnapshotRequest {
+                    request: req,
+                    since: 0,
+                },
+                t0,
+            );
+            assert_eq!(outcome.close, None);
+        }
+
+        for offset in 1..u64::from(RATE_MAX_VIOLATIONS) {
+            let outcome = session.handle(
+                Message::SnapshotRequest {
+                    request: 1000 + offset,
+                    since: 0,
+                },
+                t0,
+            );
+            assert_eq!(outcome.close, None);
+            assert!(matches!(
+                outcome.replies.as_slice(),
+                [Message::Error {
+                    kind: ErrorKind::RateLimited,
+                    ..
+                }]
+            ));
+        }
+
+        let t1 = t0 + std::time::Duration::from_secs(2);
+        let allowed = session.handle(
+            Message::SnapshotRequest {
+                request: 2000,
+                since: 0,
+            },
+            t1,
+        );
+        assert_eq!(allowed.close, None);
+        assert!(matches!(
+            allowed.replies.as_slice(),
+            [Message::Error {
+                request: 2000,
+                kind: ErrorKind::Unavailable,
+                ..
+            }]
+        ));
+
+        for req in 1..u64::from(RATE_CAPACITY) {
+            let outcome = session.handle(
+                Message::SnapshotRequest {
+                    request: 3000 + req,
+                    since: 0,
+                },
+                t1,
+            );
+            assert_eq!(outcome.close, None);
+        }
+
+        for violation in 1..u64::from(RATE_MAX_VIOLATIONS) {
+            let outcome = session.handle(
+                Message::SnapshotRequest {
+                    request: 4000 + violation,
+                    since: 0,
+                },
+                t1,
+            );
+            assert_eq!(
+                outcome.close, None,
+                "violation {violation} after reset must not close early"
+            );
+        }
+        let closing = session.handle(
+            Message::SnapshotRequest {
+                request: 5000,
+                since: 0,
+            },
+            t1,
+        );
+        assert_eq!(closing.close, Some(SERVER_EXIT_PROTOCOL));
+    }
+
+    /// Verifies that `DiffAck` refusals report `CONNECTION_ID` without closing
+    /// the session, while an accepted acknowledgement emits no reply.
+    #[test]
+    fn diff_ack_refusal_uses_connection_id_without_closing_session() {
+        let mut session = Session::new();
+        hello_session(&mut session);
+
+        let unavailable = session.handle(Message::DiffAck { generation: 1 }, now());
+        assert_eq!(unavailable.close, None);
+        assert!(matches!(
+            unavailable.replies.as_slice(),
+            [Message::Error {
+                request: CONNECTION_ID,
+                kind: ErrorKind::Unavailable,
+                ..
+            }]
+        ));
+
+        publish(&mut session, 1, 1, &[("$ echo hi", 0)]);
+        let stale = session.handle(Message::DiffAck { generation: 99 }, now());
+        assert_eq!(stale.close, None);
+        assert!(matches!(
+            stale.replies.as_slice(),
+            [Message::Error {
+                request: CONNECTION_ID,
+                kind: ErrorKind::StaleGeneration,
+                ..
+            }]
+        ));
+
+        let ok_ack = session.handle(Message::DiffAck { generation: 1 }, now());
+        assert_eq!(ok_ack.close, None);
+        assert!(ok_ack.replies.is_empty());
     }
 }
